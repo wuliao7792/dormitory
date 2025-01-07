@@ -37,6 +37,7 @@ public interface SystemAdminService {
 
     void deleteBuilding(int id);
 
+
     // 宿舍管理
     List<Dormitory> getDormitoriesByBuildingId(Integer buildingId);
 
@@ -53,5 +54,11 @@ public interface SystemAdminService {
 
     // 删除楼栋
     void deleteBuildingById(int buildingId); // 修改名称以防冲突
+
+    List<Dormitory> searchDormitories(Integer buildingId, String name, Integer type);
+
+    boolean checkDormitoryHasStudents(int dormitoryId);
+
+    int checkDormitoryAvailable(int dormitoryId);
 }
 

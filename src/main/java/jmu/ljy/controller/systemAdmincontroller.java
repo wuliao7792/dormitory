@@ -135,7 +135,12 @@ public class systemAdmincontroller {
 
     @PostMapping("/systemAdmin/deleteDormitory/{id}")
     public String deleteDormitory(@PathVariable int id) {
-        systemAdminService.deleteDormitory(id);
+        try {
+            systemAdminService.deleteDormitory(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/systemAdmin/dormitories?error=deleteDormitory";
+        }
         return "redirect:/systemAdmin/dormitories";
     }
 
@@ -172,6 +177,43 @@ public class systemAdmincontroller {
             return "redirect:/systemAdmin/buildings?error=deleteBuilding";
         }
         return "redirect:/systemAdmin/buildings"; // 成功返回楼层管理页面
+    }
+
+    // Controller层增加查询方法
+    @GetMapping("/systemAdmin/searchDormitories")
+    public String searchDormitories(@RequestParam(value = "buildingId", required = false) Integer buildingId,
+                                    @RequestParam(value = "name", required = false) String name,
+                                    @RequestParam(value = "type", required = false) Integer type,
+                                    Model model) {
+        List<Dormitory> dormitories = systemAdminService.searchDormitories(buildingId, name, type);
+        model.addAttribute("dormitories", dormitories);
+        return "systemAdmin";
+    }
+
+    @GetMapping("/systemAdmin/checkDormitory/{id}")
+    public ResponseEntity<Map<String, Object>> checkDormitory(@PathVariable int id) {
+        // 调用服务层检查是否有关联学生
+        boolean hasStudents = systemAdminService.checkDormitoryHasStudents(id);
+
+        // 构造返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("hasStudents", hasStudents);
+
+        // 返回JSON格式数据
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/systemAdmin/checkDormitoryAvailable/{id}")
+    public ResponseEntity<Map<String, Object>> checkDormitoryAvailable(@PathVariable int id) {
+// 调用服务层检查宿舍可用床位数
+        int available = systemAdminService.checkDormitoryAvailable(id);
+
+// 构造返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("available", available);
+
+// 返回JSON格式数据
+        return ResponseEntity.ok(result);
     }
 }
 
