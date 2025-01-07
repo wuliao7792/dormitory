@@ -151,9 +151,33 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 宿舍管理开始 -->
                 <div class="tab-pane fade" id="dormitoryManagement" role="tabpanel" aria-labelledby="dormitoryManagement-tab">
                     <h2>宿舍管理</h2>
                     <p>这里是宿舍管理内容。</p>
+
+                    <!-- 查询宿舍 -->
+                    <form action="/systemAdmin/searchDormitories" method="get" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="queryBuildingId" class="form-label">楼栋ID</label>
+                                <input type="number" class="form-control" id="queryBuildingId" name="buildingId" placeholder="输入楼栋ID">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="queryDormitoryName" class="form-label">宿舍名称</label>
+                                <input type="text" class="form-control" id="queryDormitoryName" name="name" placeholder="输入宿舍名称">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="queryDormitoryType" class="form-label">类型</label>
+                                <input type="number" class="form-control" id="queryDormitoryType" name="type" placeholder="输入类型">
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="submit" class="btn btn-primary">查询</button>
+                            </div>
+                        </div>
+                    </form>
+
 
                     <!-- 显示宿舍列表 -->
                     <table class="table">
@@ -182,12 +206,49 @@
                                         th:data-id="${dormitory.id}" onclick="populateDormitoryUpdateModal(this)">更新</button>
                                 <!-- 删除按钮 -->
                                 <form th:action="@{'/systemAdmin/deleteDormitory/' + ${dormitory.id}}" method="post" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('确定要删除该宿舍信息？');">删除</button>
+                                    <button type="button" class="btn btn-danger" onclick="checkBeforeDeleteDormitory(this)"th:data-id="${dormitory.id}">删除</button>
                                 </form>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+
+                    <!-- 更新宿舍模态框 -->
+                    <div class="modal fade" id="updateDormitoryModal" tabindex="-1" aria-labelledby="updateDormitoryModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="/systemAdmin/updateDormitory" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="updateDormitoryModalLabel">更新宿舍</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- 隐藏的id字段必须传递 -->
+                                        <input type="hidden" id="update-dormitory-id" name="id" required>
+                                        <div class="mb-3">
+                                            <label for="updateDormitoryName" class="form-label">宿舍名称</label>
+                                            <input type="text" class="form-control" id="updateDormitoryName" name="name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="updateDormitoryType" class="form-label">类型</label>
+                                            <input type="number" class="form-control" id="updateDormitoryType" name="type" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="updateDormitoryAvailable" class="form-label">可用个数</label>
+                                            <input type="number" class="form-control" id="updateDormitoryAvailable" name="available" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="updateDormitoryTelephone" class="form-label">联系电话</label>
+                                            <input type="text" class="form-control" id="updateDormitoryTelephone" name="telephone" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">提交</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- 添加宿舍按钮 -->
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDormitoryModal">添加宿舍</button>
@@ -231,6 +292,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- 宿舍管理结束 -->
 
 
                 <div class="tab-pane fade" id="studentManagement" role="tabpanel" aria-labelledby="studentManagement-tab">
@@ -381,8 +443,7 @@
                                             </div>
                                             <div class="modal-body">
                                                 <form id="updateStudentForm" action="/systemAdmin/updateStudent" method="post">
-                                                    <input type="hidden" class="form-control" name="studentId" id="studentId"
-                                                    >
+                                                    <input type="hidden" class="form-control" name="studentId" id="studentId">
                                                     <div class="mb-3">
                                                         <label for="updateName" class="form-label">姓名:</label>
                                                         <input type="text" class="form-control" id="updateName" name="updateName">
@@ -397,8 +458,8 @@
                                                     </div>
                                                     <!-- 其他表单字段 -->
                                                     <div class="mb-3">
-                                                        <label for="updateDormitoryName" class="form-label">宿舍名:</label>
-                                                        <select class="form-select" id="updateDormitoryName" name="dormitoryName"></select>
+                                                        <label for="updateDormitoryId" class="form-label">宿舍ID:</label>
+                                                        <input type="number" class="form-control" id="updateDormitoryId" name="dormitoryName">
                                                     </div>
                                                     <div class="mb-3">
                                                         <button type="submit" class="btn btn-primary">提交</button>
@@ -407,7 +468,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
 
                                 <!-- 删除按钮 -->
@@ -562,45 +622,43 @@
     document.addEventListener('DOMContentLoaded', fetchAvailableDormitories);
 </script>
 <script>
-    // 定义函数showUpdateModal，用于显示更新宿舍信息的模态框
     function showUpdateModal(button) {
         // 获取点击的按钮的学生ID
         var studentId = button.getAttribute('data-student-id');
         // 将学生ID设置为隐藏输入字段的值
         document.getElementById('studentId').value = studentId;
 
-        // 动态填充宿舍ID下拉列表
-        fetch('/getAvailableDormitories')
-            // 处理响应，将响应体转换为JSON格式
-            .then(response => response.json())
-            // 处理JSON数据，获取可用宿舍列表
+
+        var dormitoryId = button.closest('tr').querySelector('td:nth-child(7)').textContent;
+        var dormitoryIdInput = document.getElementById('updateDormitoryId');
+        // fetch 获取当前宿舍的可用床位数
+        fetch(`/systemAdmin/checkDormitoryAvailable/${dormitoryId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("获取宿舍可用床位数失败，状态码：" + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
-                // 获取id为'updateDormitoryName'的select元素
-                const dormitorySelect = document.getElementById('updateDormitoryName');
-                // 如果找到了select元素
-                if (dormitorySelect) {
-                    // 清空select元素的现有内容
-                    dormitorySelect.innerHTML = '';
-                    // 创建一个空的option元素作为默认选项
-                    const blankOption = document.createElement('option');
-                    blankOption.value = 0;
-                    blankOption.text = '请选择';
-                    // 将默认选项添加到select元素中
-                    dormitorySelect.appendChild(blankOption);
-                    // 遍历宿舍数据，为每个宿舍创建一个option元素并添加到select元素中
-                    data.forEach(dormitory => {
-                        const option = document.createElement('option');
-                        option.value = dormitory.id;
-                        option.text = dormitory.name;
-                        dormitorySelect.appendChild(option);
-                    });
+                if (data.available === 0) {
+                    alert("该宿舍已满员，无法修改");
+                    dormitoryIdInput.value = "";
+                    // 阻止模态框显示
+                    const modal = document.getElementById('updateModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+
+
                 } else {
-                    // 如果没有找到select元素，输出错误信息
-                    console.error('Dormitory select element not found');
+                    dormitoryIdInput.value = dormitoryId;
                 }
             })
-            // 错误处理，如果请求失败，则在控制台输出错误信息
-            .catch(error => console.error('Error fetching available dormitories:', error));
+            .catch(error => {
+                console.error("获取宿舍可用床位数失败：", error);
+                alert("获取宿舍可用床位数失败，请稍后再试！");
+            });
     }
 
     // 定义函数showDeleteModal，用于显示删除学生信息的模态框
@@ -699,6 +757,93 @@
             });
     }
 </script>
-</body>
+<script>
+function populateDormitoryUpdateModal(button) {
+const dormitoryId = button.getAttribute('data-id');
+const dormitoryName = button.getAttribute('data-name');
+const dormitoryType = button.getAttribute('data-type');
+const dormitoryAvailable = button.getAttribute('data-available');
+const dormitoryTelephone = button.getAttribute('data-telephone');
+
+const updateDormitoryIdInput = document.getElementById('update-dormitory-id');
+const updateDormitoryNameInput = document.getElementById('updateDormitoryName');
+const updateDormitoryTypeInput = document.getElementById('updateDormitoryType');
+const updateDormitoryAvailableInput = document.getElementById('updateDormitoryAvailable');
+const updateDormitoryTelephoneInput = document.getElementById('updateDormitoryTelephone');
+
+console.log('Dormitory ID:', dormitoryId);
+console.log('Dormitory Name:', dormitoryName);
+console.log('Dormitory Type:', dormitoryType);
+console.log('Dormitory Available:', dormitoryAvailable);
+console.log('Dormitory Telephone:', dormitoryTelephone);
+
+console.log('updateDormitoryIdInput:', updateDormitoryIdInput);
+console.log('updateDormitoryNameInput:', updateDormitoryNameInput);
+console.log('updateDormitoryTypeInput:', updateDormitoryTypeInput);
+console.log('updateDormitoryAvailableInput:', updateDormitoryAvailableInput);
+console.log('updateDormitoryTelephoneInput:', updateDormitoryTelephoneInput);
+
+if (!dormitoryId) {
+console.error("宿舍 ID 为 null，无法执行更新！");
+return;
+}
+
+// 更新模态框字段
+if (updateDormitoryIdInput) {
+updateDormitoryIdInput.value = dormitoryId;
+}
+if (updateDormitoryNameInput) {
+updateDormitoryNameInput.value = dormitoryName;
+}
+if (updateDormitoryTypeInput) {
+updateDormitoryTypeInput.value = dormitoryType;
+}
+if (updateDormitoryAvailableInput) {
+updateDormitoryAvailableInput.value = dormitoryAvailable;
+}
+if (updateDormitoryTelephoneInput) {
+updateDormitoryTelephoneInput.value = dormitoryTelephone;
+}
+}
+</script>
+<script>
+    function checkBeforeDeleteDormitory(button) {
+        const dormitoryId = button.getAttribute('data-id');
+
+        // 调用后端接口检查是否有关联学生
+        fetch(`/systemAdmin/checkDormitory/${dormitoryId}`)  // 动态替换路径
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("服务器响应失败，状态码：" + response.status);
+                }
+                return response.json(); // 解析为JSON
+            })
+            .then(data => {
+                if (data.hasStudents) {
+                    alert("该宿舍内还有学生，无法删除！");
+                } else {
+                    if (confirm("确认删除该宿舍吗？")) {
+                        // 删除宿舍逻辑
+                        fetch(`/systemAdmin/deleteDormitory/${dormitoryId}`, { method: 'POST' })
+                            .then(res => {
+                                if (res.ok) {
+                                    alert("宿舍已成功删除！");
+                                    location.reload();
+                                } else {
+                                    alert("删除失败，请重试！");
+                                }
+                            })
+                            .catch(err => {
+                                console.error("删除失败：", err);
+                            });
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("检查宿舍失败：", err);
+                alert("检查失败，请稍后再试！");
+            });
+    }
+</script>
 </body>
 </html>

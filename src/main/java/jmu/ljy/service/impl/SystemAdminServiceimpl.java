@@ -50,13 +50,20 @@ public class SystemAdminServiceimpl implements SystemAdminService {
 
 
     @Override
-    public void updateStudentMessage(int studentId,Integer dormitoryName,String updateName, String user_Name,String userPassword){
-        int oldDormitoryId = systemMapper.searchDormitoryIdFromStudent(studentId);
-        systemMapper.updateStudentMessage(studentId,dormitoryName,updateName,user_Name,userPassword);
-        int newDormitoryId = systemMapper.searchDormitoryIdFromStudent(studentId);
-        systemMapper.updateDormitoryAvailable(oldDormitoryId, 1);
-        systemMapper.updateDormitoryAvailable(newDormitoryId, -1);
+    public void updateStudentMessage(int studentId, Integer dormitoryName, String updateName, String user_Name, String userPassword) {
+        // 检查 dormitoryName 是否为空
+        if (dormitoryName == null) {
+            throw new IllegalArgumentException("宿舍名（dormitoryName）不能为空！");
+        }
 
+        int oldDormitoryId = systemMapper.searchDormitoryIdFromStudent(studentId); // 查找旧宿舍 ID
+        systemMapper.updateStudentMessage(studentId, dormitoryName, updateName, user_Name, userPassword); // 更新学生信息
+        int newDormitoryId = systemMapper.searchDormitoryIdFromStudent(studentId); // 查找新宿舍 ID
+
+        // 更新旧宿舍床位可用数量
+        systemMapper.updateDormitoryAvailable(oldDormitoryId, 1);
+        // 更新新宿舍床位可用数量
+        systemMapper.updateDormitoryAvailable(newDormitoryId, -1);
     }
 
 
@@ -155,5 +162,21 @@ public class SystemAdminServiceimpl implements SystemAdminService {
 
         // 删除楼栋
         systemMapper.deleteBuilding(buildingId);
+    }
+
+    @Override
+    public List<Dormitory> searchDormitories(Integer buildingId, String name, Integer type) {
+        return systemMapper.searchDormitories(buildingId, name, type);
+    }
+
+    @Override
+    public boolean checkDormitoryHasStudents(int dormitoryId) {
+        int studentCount = systemMapper.countStudentsByDormitoryId(dormitoryId);
+        return studentCount > 0;
+    }
+
+    @Override
+    public int checkDormitoryAvailable(int dormitoryId) {
+        return systemMapper.getDormitoryAvailable(dormitoryId);
     }
 }

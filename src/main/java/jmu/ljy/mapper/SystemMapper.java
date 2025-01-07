@@ -145,5 +145,27 @@ public interface SystemMapper {
     @Delete("DELETE FROM dormitory WHERE building_id = #{buildingId}")
     void deleteDormitoriesByBuildingId(@Param("buildingId") int buildingId);
 
+    @Select("<script>" +
+            "SELECT * FROM dormitory " +
+            "<where>" +
+            "<if test='buildingId != null'>" +
+            "   AND building_id = #{buildingId}" +
+            "</if>" +
+            "<if test='name != null and name != \"\"'>" +
+            "   AND name LIKE CONCAT('%', #{name}, '%')" +
+            "</if>" +
+            "<if test='type != null'>" +
+            "   AND type = #{type}" +
+            "</if>" +
+            "</where>" +
+            "</script>")
+    List<Dormitory> searchDormitories(@Param("buildingId") Integer buildingId, @Param("name") String name, @Param("type") Integer type);
 
+    // 查询宿舍关联的学生数量
+    @Select("SELECT COUNT(*) FROM student WHERE dormitory_id = #{dormitoryId}")
+    int countStudentsByDormitoryId(@Param("dormitoryId") int dormitoryId);
+
+    // 查询宿舍可用床位数
+    @Select("SELECT available FROM dormitory WHERE id = #{dormitoryId}")
+    int getDormitoryAvailable(@Param("dormitoryId") int dormitoryId);
 }
