@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统管理员</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .content {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 bg-light sidebar">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a href="#floorManagement" class="nav-link active" id="floorManagement-tab" data-bs-toggle="pill">楼层管理</a>
+                <a href="#dormitoryManagement" class="nav-link" id="dormitoryManagement-tab" data-bs-toggle="pill">宿舍管理</a>
+                <a href="#studentManagement" class="nav-link" id="studentManagement-tab" data-bs-toggle="pill">学生管理</a>
+                <a href="#messageManagement" class="nav-link" id="messageManagement-tab" data-bs-toggle="pill">消息管理</a>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="tab-content" id="v-pills-tabContent">
+                <div class="tab-pane fade show active" id="floorManagement" role="tabpanel" aria-labelledby="floorManagement-tab">
+                    <h2>楼层管理</h2>
+                    <p>这里是楼层管理内容。</p>
+
+                    <!-- 查询楼层 -->
+                    <form action="/systemAdmin/searchBuildings" method="get" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="queryBuildingName" class="form-label">楼层名称</label>
+                                <input type="text" class="form-control" id="queryBuildingName" name="name" placeholder="输入楼层名称">
+                            </div>
+                            <div class="col-md-4 align-self-end">
+                                <button type="submit" class="btn btn-primary">查询</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- 显示楼层列表表格 -->
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>楼层ID</th>
+                            <th>楼层名称</th>
+                            <th>简介</th>
+                            <th>管理员ID</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 使用【Thymeleaf】动态遍历楼层列表 -->
+                        <tr th:each="building : ${buildings}">
+                            <td th:text="${building.id}"></td>
+                            <td th:text="${building.name}"></td>
+                            <td th:text="${building.introduction}"></td>
+                            <td th:text="${building.admin_id}"></td>
+                            <td>
+                                <!-- 更新楼层按钮 -->
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                                        data-bs-target="#updateBuildingModal" onclick="populateBuildingUpdateModal(this)"
+                                        th:data-id="${building.id}" th:data-name="${building.name}"
+                                        th:data-introduction="${building.introduction}">
+                                    更新
+                                </button>
+                                <!-- 删除按钮，绑定事件 -->
+                                <button type="button" class="btn btn-danger"
+                                        onclick="checkBeforeDeleteBuilding(this)"
+                                        th:data-id="${building.id}">
+                                    删除
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 添加楼层按钮 -->
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBuildingModal">添加楼层</button>
+
+                    <!-- 添加楼层模态框 -->
+                    <div class="modal fade" id="addBuildingModal" tabindex="-1" aria-labelledby="addBuildingModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="/systemAdmin/addBuilding" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="addBuildingModalLabel">添加楼层</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="buildingName" class="form-label">楼层名称</label>
+                                            <input type="text" class="form-control" id="buildingName" name="name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="buildingIntroduction" class="form-label">楼层简介</label>
+                                            <input type="text" class="form-control" id="buildingIntroduction" name="introduction" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="buildingAdminId" class="form-label">管理员ID</label>
+                                            <input type="number" class="form-control" id="buildingAdminId" name="adminId" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">提交</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 更新楼层模态框 -->
+                    <div class="modal fade" id="updateBuildingModal" tabindex="-1" aria-labelledby="updateBuildingModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="/systemAdmin/updateBuilding" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="updateBuildingModalLabel">更新楼层</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- 隐藏的id字段必须传递 -->
+                                        <input type="hidden" id="update-building-id" name="id" required>
+                                        <div class="mb-3">
+                                            <label for="updateBuildingName" class="form-label">楼层名称</label>
+                                            <input type="text" class="form-control" id="updateBuildingName" name="name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="updateBuildingIntroduction" class="form-label">简介</label>
+                                            <input type="text" class="form-control" id="updateBuildingIntroduction" name="introduction" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">提交</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="dormitoryManagement" role="tabpanel" aria-labelledby="dormitoryManagement-tab">
+                    <h2>宿舍管理</h2>
+                    <p>这里是宿舍管理内容。</p>
+
+                    <!-- 显示宿舍列表 -->
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>楼栋ID</th>
+                            <th>名称</th>
+                            <th>类型</th>
+                            <th>可用个数</th>
+                            <th>联系电话</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="dormitory : ${dormitories}">
+                            <td th:text="${dormitory.id}"></td>
+                            <td th:text="${dormitory.building_id}"></td>
+                            <td th:text="${dormitory.name}"></td>
+                            <td th:text="${dormitory.type}"></td>
+                            <td th:text="${dormitory.available}"></td>
+                            <td th:text="${dormitory.telephone}"></td>
+                            <td>
+                                <!-- 更新按钮 -->
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#updateDormitoryModal"
+                                        th:data-id="${dormitory.id}" onclick="populateDormitoryUpdateModal(this)">更新</button>
+                                <!-- 删除按钮 -->
+                                <form th:action="@{'/systemAdmin/deleteDormitory/' + ${dormitory.id}}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('确定要删除该宿舍信息？');">删除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 添加宿舍按钮 -->
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDormitoryModal">添加宿舍</button>
+
+                    <!-- 添加宿舍模态框 -->
+                    <div class="modal fade" id="addDormitoryModal" tabindex="-1" aria-labelledby="addDormitoryModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="/systemAdmin/addDormitory" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="addDormitoryModalLabel">新增宿舍</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="dormBuildingId" class="form-label">楼栋ID</label>
+                                            <input type="number" class="form-control" id="dormBuildingId" name="buildingId" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="dormName" class="form-label">宿舍名称</label>
+                                            <input type="text" class="form-control" id="dormName" name="name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="dormType" class="form-label">类型</label>
+                                            <input type="number" class="form-control" id="dormType" name="type" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="dormAvailable" class="form-label">可用个数</label>
+                                            <input type="number" class="form-control" id="dormAvailable" name="available" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="dormTelephone" class="form-label">联系电话</label>
+                                            <input type="text" class="form-control" id="dormTelephone" name="telephone" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">提交</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="tab-pane fade" id="studentManagement" role="tabpanel" aria-labelledby="studentManagement-tab">
+                    <h2>学生管理</h2>
+                    <p>这里是学生管理内容。</p>
+                    <!-- 增加学生按钮 -->
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        增加学生
+                    </button>
+
+
+                    <!-- 增加学生模态窗口 -->
+                    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addStudentModalLabel">增加学生</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="addStudentForm" action="/systemAdmin/addStudent" method="post">
+                                        <div class="mb-3">
+                                            <label for="number" class="form-label">学号:</label>
+                                            <input type="text" class="form-control" id="number" name="number" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">姓名:</label>
+                                            <input type="text" class="form-control" id="name" name="name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label">用户名:</label>
+                                            <input type="text" class="form-control" id="username" name="username" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label">密码:</label>
+                                            <input type="password" class="form-control" id="password" name="password" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="gender" class="form-label">性别:</label>
+                                            <select class="form-select" id="gender" name="gender" required>
+                                                <option value="男">男</option>
+                                                <option value="女">女</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="dormitory_id" class="form-label">宿舍ID:</label>
+                                            <select class="form-select" id="dormitory_id" name="dormitory_id" required>
+                                                <!-- 选项将通过JavaScript动态填充 -->
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <button type="submit" class="btn btn-primary">提交</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchModal">
+                        查询学生
+                    </button>
+                    <h6>查询内容都是可选填项</h6>
+
+                    <!-- 模态窗口 -->
+                    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="searchModalLabel">查询条件</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="searchStudentForm" action="/systemAdmin/searchStudents" method="get">
+                                        <div class="mb-3">
+                                            <label for="studentNumber" class="form-label">学号:</label>
+                                            <input type="text" class="form-control" id="studentNumber" name="number">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="studentName" class="form-label">姓名:</label>
+                                            <input type="text" class="form-control" id="studentName" name="name">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="studentGender" class="form-label">性别:</label>
+                                            <select class="form-select" id="studentGender" name="gender">
+                                                <option value="">请选择</option>
+                                                <option value="男">男</option>
+                                                <option value="女">女</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="dormitoryId" class="form-label">宿舍ID:</label>
+                                            <input type="number" class="form-control" id="dormitoryId" name="dormitoryId">
+                                        </div>
+                                        <div class="mb-3">
+                                            <button type="submit" class="btn btn-primary">查询</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 学生信息表格 -->
+                    <table class="table" id="studentsTable">
+                        <thead>
+                        <tr>
+                            <th>ID号</th>
+                            <th>学号</th>
+                            <th>姓名</th>
+                            <th>用户名</th>
+                            <th>密码</th>
+                            <th>性别</th>
+                            <th>宿舍ID</th>
+                            <th>创建日期</th>
+                            <th>更新日期</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 使用循环遍历students列表 -->
+                        <tr th:each="student : ${students}">
+                            <td th:text="${student.id}"></td>
+                            <td th:text="${student.number}"></td>
+                            <td th:text="${student.name}"></td>
+                            <td th:text="${student.username}"></td>
+                            <td th:text="${student.password}"></td>
+                            <td th:text="${student.gender}"></td>
+                            <td th:text="${student.dormitory_Id}"></td>
+                            <td th:text="${student.create_Date}"></td>
+                            <td th:text="${student.update_Date}"></td>
+                            <td>
+                                <!-- 更新按钮 -->
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#updateModal"
+                                        th:data-student-id="${student.id}" onclick="showUpdateModal(this)">
+                                    更新
+                                </button>
+
+
+                                <!-- 模态窗口 -->
+                                <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="updateModalLabel">更新学生信息</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="updateStudentForm" action="/systemAdmin/updateStudent" method="post">
+                                                    <input type="hidden" class="form-control" name="studentId" id="studentId"
+                                                    >
+                                                    <div class="mb-3">
+                                                        <label for="updateName" class="form-label">姓名:</label>
+                                                        <input type="text" class="form-control" id="updateName" name="updateName">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="user_Name" class="form-label">用户名:</label>
+                                                        <input type="text" class="form-control" id="user_Name" name="user_Name">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="userPassword" class="form-label">密码:</label>
+                                                        <input type="text" class="form-control" id="userPassword" name="userPassword">
+                                                    </div>
+                                                    <!-- 其他表单字段 -->
+                                                    <div class="mb-3">
+                                                        <label for="updateDormitoryName" class="form-label">宿舍名:</label>
+                                                        <select class="form-select" id="updateDormitoryName" name="dormitoryName"></select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <button type="submit" class="btn btn-primary">提交</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- 删除按钮 -->
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal" th:data-student-id="${student.id}"
+                                        onclick="showDeleteModal(this)">
+                                    删除
+                                </button>
+                                <!-- 删除模态窗口 -->
+                                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                确定要删除这个学生吗？
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                <form method="post" id="deleteStudentForm" th:action="@{/deleteStudent}">
+                                                    <input type="hidden" name="student_Id" id="student_Id">
+                                                    <button type="submit" class="btn btn-danger">删除</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                    </table>
+                </div>
+
+
+
+
+
+
+
+
+                <div class="tab-pane fade" id="messageManagement" role="tabpanel" aria-labelledby="messageManagement-tab">
+                    <h2>消息管理</h2>
+                    <p>这里是消息管理内容。</p>
+                    <form id="searchForm" action="/records" method="get">
+                        <div class="mb-3">
+                            <label class="form-label">信息类型:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="mark" id="repair" value="repair">
+                                <label class="form-check-label" for="repair">报修</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="mark" id="moveout" value="moveout">
+                                <label class="form-check-label" for="moveout">迁移</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="mark" id="notice" value="notice">
+                                <label class="form-check-label" for="notice">公告</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">查询</button>
+                    </form>
+                    <!-- 信息记录表格 -->
+                    <table class="table" id="recordsTable">
+                        <thead>
+                        <tr>
+                            <th>ID号</th>
+                            <th>信息标题</th>
+                            <th>内容</th>
+                            <th>标记信息类型</th>
+                            <th>创建时间</th>
+                            <th>审核状态</th>
+                            <th>宿舍ID</th>
+                            <th>管理员ID</th>
+                            <th>楼名</th>
+                            <th>宿舍名</th>
+                            <th>姓名</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 使用循环遍历records列表 -->
+                        <tr th:each="record : ${records}">
+                            <td th:text="${record.id}"></td>
+                            <td th:text="${record.title}"></td>
+                            <td th:text="${record.content}"></td>
+                            <td th:text="${record.mark}"></td>
+                            <td th:text="${record.time}"></td>
+                            <td th:text="${record.audit}"></td>
+                            <td th:text="${record.dormitoryId}"></td>
+                            <td th:text="${record.adminId}"></td>
+                            <td th:text="${record.building_name}"></td>
+                            <td th:text="${record.dormitory_name}"></td>
+                            <td th:text="${record.name}"></td>
+                            <td>
+                                <!-- 删除操作的表单 -->
+                                <form th:action="@{'/deleteRecord/' + ${record.id}}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定删除吗？');">删除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </main>
+
+
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 定义函数fetchAvailableDormitories，用于获取可用宿舍信息并填充到下拉菜单中
+    function fetchAvailableDormitories() {
+        // 使用fetch API请求获取可用宿舍信息
+        fetch('/getAvailableDormitories')
+            // 处理响应，将响应体转换为JSON格式
+            .then(response => response.json())
+            // 处理JSON数据，获取可用宿舍列表
+            .then(data => {
+                // 获取id为'dormitory_id'的select元素
+                const dormitorySelect = document.getElementById('dormitory_id');
+                // 如果找到了select元素
+                if (dormitorySelect) {
+                    // 清空select元素的现有内容
+                    dormitorySelect.innerHTML = '';
+                    // 创建一个空的option元素作为默认选项
+                    const blankOption = document.createElement('option');
+                    blankOption.value = 0;
+                    blankOption.text = '请选择';
+                    // 将默认选项添加到select元素中
+                    dormitorySelect.appendChild(blankOption);
+                    // 遍历宿舍数据，为每个宿舍创建一个option元素并添加到select元素中
+                    data.forEach(dormitory => {
+                        const option = document.createElement('option');
+                        option.value = dormitory.id;
+                        option.text = dormitory.name;
+                        dormitorySelect.appendChild(option);
+                    });
+                } else {
+                    // 如果没有找到select元素，输出错误信息
+                    console.error('Dormitory select element not found');
+                }
+            })
+            // 错误处理，如果请求失败，则在控制台输出错误信息
+            .catch(error => console.error('Error fetching available dormitories:', error));
+    }
+
+    // 在页面加载完成后立即执行fetchAvailableDormitories函数填充宿舍ID单选框
+    document.addEventListener('DOMContentLoaded', fetchAvailableDormitories);
+</script>
+<script>
+    // 定义函数showUpdateModal，用于显示更新宿舍信息的模态框
+    function showUpdateModal(button) {
+        // 获取点击的按钮的学生ID
+        var studentId = button.getAttribute('data-student-id');
+        // 将学生ID设置为隐藏输入字段的值
+        document.getElementById('studentId').value = studentId;
+
+        // 动态填充宿舍ID下拉列表
+        fetch('/getAvailableDormitories')
+            // 处理响应，将响应体转换为JSON格式
+            .then(response => response.json())
+            // 处理JSON数据，获取可用宿舍列表
+            .then(data => {
+                // 获取id为'updateDormitoryName'的select元素
+                const dormitorySelect = document.getElementById('updateDormitoryName');
+                // 如果找到了select元素
+                if (dormitorySelect) {
+                    // 清空select元素的现有内容
+                    dormitorySelect.innerHTML = '';
+                    // 创建一个空的option元素作为默认选项
+                    const blankOption = document.createElement('option');
+                    blankOption.value = 0;
+                    blankOption.text = '请选择';
+                    // 将默认选项添加到select元素中
+                    dormitorySelect.appendChild(blankOption);
+                    // 遍历宿舍数据，为每个宿舍创建一个option元素并添加到select元素中
+                    data.forEach(dormitory => {
+                        const option = document.createElement('option');
+                        option.value = dormitory.id;
+                        option.text = dormitory.name;
+                        dormitorySelect.appendChild(option);
+                    });
+                } else {
+                    // 如果没有找到select元素，输出错误信息
+                    console.error('Dormitory select element not found');
+                }
+            })
+            // 错误处理，如果请求失败，则在控制台输出错误信息
+            .catch(error => console.error('Error fetching available dormitories:', error));
+    }
+
+    // 定义函数showDeleteModal，用于显示删除学生信息的模态框
+    function showDeleteModal(button) {
+        // 获取点击的按钮的学生ID
+        var student_Id = button.getAttribute('data-student-id');
+
+        // 设置隐藏字段的值
+        document.getElementById('student_Id').value = student_Id;
+
+        // 设置表单的action属性，用于指定删除请求的URL
+        var form = document.getElementById('deleteStudentForm');
+        form.action = '/deleteStudent/' + student_Id;
+    }
+</script>
+<script>
+    // 定义 `populateBuildingUpdateModal` 函数
+    function populateBuildingUpdateModal(button) {
+        // 从按钮上获取 data-* 属性
+        const buildingId = button.getAttribute('data-id');
+        const buildingName = button.getAttribute('data-name');
+        const buildingIntroduction = button.getAttribute('data-introduction');
+
+        // 检查是否正确获取到数据
+        console.log("BuildingId:", buildingId, "BuildingName:", buildingName, "BuildingIntroduction:", buildingIntroduction);
+
+        // 安全检查，确保楼层 ID 存在
+        if (!buildingId) {
+            console.error("楼层 ID 为空，无法更新！");
+            return;
+        }
+
+        // 填充模态框中的值
+        document.getElementById('update-building-id').value = buildingId;
+        document.getElementById('updateBuildingName').value = buildingName;
+        document.getElementById('updateBuildingIntroduction').value = buildingIntroduction;
+    }
+</script>
+<script>
+    function populateDormitoryUpdateModal(button) {
+        const dormitoryId = button.getAttribute('data-id');
+        const dormitoryName = button.getAttribute('data-name');
+        const dormitoryType = button.getAttribute('data-type');
+        const dormitoryAvailable = button.getAttribute('data-available');
+        const dormitoryTelephone = button.getAttribute('data-telephone');
+
+        if (!dormitoryId) {
+            console.error("宿舍 ID 为 null，无法执行更新！");
+            return;
+        }
+
+        // 更新模态框字段
+        document.getElementById('update-dormitory-id').value = dormitoryId;
+        document.getElementById('updateDormitoryName').value = dormitoryName;
+        document.getElementById('updateDormitoryType').value = dormitoryType;
+        document.getElementById('updateDormitoryAvailable').value = dormitoryAvailable;
+        document.getElementById('updateDormitoryTelephone').value = dormitoryTelephone;
+    }
+</script>
+<script>
+    function checkBeforeDeleteBuilding(button) {
+        const buildingId = button.getAttribute('data-id');
+
+        // 调用后端接口检查是否有关联宿舍
+        fetch(`/systemAdmin/checkBuilding/${buildingId}`)  // 动态替换路径
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("服务器响应失败，状态码：" + response.status);
+                }
+                return response.json(); // 解析为JSON
+            })
+            .then(data => {
+                if (data.hasDormitories) {
+                    alert("该宿舍楼内还有宿舍，无法删除！");
+                } else {
+                    if (confirm("确认删除该楼层吗？")) {
+                        // 删除楼层逻辑
+                        fetch(`/systemAdmin/deleteBuilding/${buildingId}`, { method: 'POST' })
+                            .then(res => {
+                                if (res.ok) {
+                                    alert("楼层已成功删除！");
+                                    location.reload();
+                                } else {
+                                    alert("删除失败，请重试！");
+                                }
+                            })
+                            .catch(err => {
+                                console.error("删除失败：", err);
+                            });
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("检查楼栋失败：", err);
+                alert("检查失败，请稍后再试！");
+            });
+    }
+</script>
+</body>
+</body>
+</html>

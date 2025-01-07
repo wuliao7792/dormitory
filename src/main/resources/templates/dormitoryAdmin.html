@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宿舍管理员</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .content {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 bg-light sidebar">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a href="#dormitoryInfo" class="nav-link active" id="dormitoryInfo-tab" data-bs-toggle="pill">宿舍信息</a>
+                <a href="#students" class="nav-link" id="students-tab" data-bs-toggle="pill" th:classappend="${activeTab == 'students'} ? 'active' : ''">学生信息</a>
+                <a href="#repair" class="nav-link" id="repair-tab" data-bs-toggle="pill">宿舍报修</a>
+                <a href="#moveout" class="nav-link" id="moveout-tab" data-bs-toggle="pill">迁移审理</a>
+                <a href="#announcement" class="nav-link" id="announcement-tab" data-bs-toggle="pill">公告</a>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="tab-content" id="v-pills-tabContent">
+                <!-- dormitoryAdmin.html -->
+                <div class="tab-pane fade show active" id="dormitoryInfo"
+                     role="tabpanel" aria-labelledby="dormitoryInfo-tab">
+                    <h2>宿舍信息</h2>
+                    <p>这里是宿舍信息管理内容。</p>
+
+                    <!-- 查询表单 -->
+                    <form id="dormitoryForm" action="/dormitoryAdmin/searchdormitory" method="post">
+                        <div class="mb-3">
+                            <label for="roomNumber" class="form-label">房间号:</label>
+                            <input type="text" class="form-control" id="roomNumber" name="roomNumber" placeholder="可选填">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="availableOnly" name="availableOnly">
+                            <label class="form-check-label" for="availableOnly">仅显示空余房间</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">查询</button>
+                    </form>
+
+                    <table class="table" id="dormitoryTable" th:if="${dormitoryInfoDTO}">
+                        <thead>
+                        <tr>
+                            <th>建筑ID</th>
+                            <th>建筑名称</th>
+                            <th>宿舍ID</th>
+                            <th>宿舍名称</th>
+                            <th>宿舍类型</th>
+                            <th>空余状态</th>
+                            <th>宿舍电话</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 使用th:each遍历dormitoryInfoDTO列表 -->
+                        <tr th:each="dormitory : ${dormitoryInfoDTO}">
+                            <td th:text="${dormitory.buildingId}">建筑ID</td>
+                            <td th:text="${dormitory.buildingName}">建筑名称</td>
+                            <td th:text="${dormitory.dormitoryId}">宿舍ID</td>
+                            <td th:text="${dormitory.dormitoryName}">宿舍名称</td>
+                            <td th:text="${dormitory.dormitoryType}">宿舍类型</td>
+                            <td th:text="${dormitory.dormitoryAvailable}">空余状态</td>
+                            <td th:text="${dormitory.dormitoryTelephone}">宿舍电话</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="students" role="tabpanel" aria-labelledby="students-tab" th:classappend="${activeTab == 'students'} ? 'show active' : ''">
+                    <h2>学生信息</h2>
+                    <p>这里是学生信息管理内容。</p>
+
+                    <!-- 查询表单 -->
+                    <form id="studentForm" action="/dormitoryAdmin/searchStudents" method="post">
+                        <div class="mb-3">
+                            <label for="student_roomName" class="form-label">房间号:</label>
+                            <input type="text" class="form-control" id="student_roomName" name="roomName" placeholder="可选填">
+                        </div>
+                        <button type="submit" class="btn btn-primary">查询</button>
+                    </form>
+
+                    <!-- 结果表格 -->
+                    <table class="table" id="studentTable" th:if="${dormitoryStudentDTO}">
+                        <thead>
+                        <tr>
+                            <th>学生ID</th>
+                            <th>学生编号</th>
+                            <th>学生姓名</th>
+                            <th>性别</th>
+                            <th>宿舍ID</th>
+                            <th>楼号</th>
+                            <th>宿舍名称</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 使用th:each遍历studentInfoDTO列表 -->
+                        <tr th:each="student : ${dormitoryStudentDTO}">
+                            <td th:text="${student.id}">学生ID</td>
+                            <td th:text="${student.number}">学生编号</td>
+                            <td th:text="${student.name}">学生姓名</td>
+                            <td th:text="${student.gender}">性别</td>
+                            <td th:text="${student.dormitory_id}">宿舍ID</td>
+                            <td th:text="${student.building_id}">楼号</td>
+                            <td th:text="${student.dormitory_name}">宿舍名称</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="repair" role="tabpanel" aria-labelledby="repair-tab">
+                    <h2>宿舍报修</h2>
+                    <p>这里是宿舍报修信息管理内容。</p>
+                    <table class="table" id="repairTable">
+                        <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>内容</th>
+                            <th>时间</th>
+                            <th>宿舍ID号</th>
+                            <th>宿舍名</th>
+                            <th>楼名</th>
+                            <th>报修人</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="record : ${repairRecords}">
+                            <td th:text="${record.title}">标题</td>
+                            <td th:text="${record.content}">内容</td>
+                            <td th:text="${record.time}">时间</td>
+                            <td th:text="${record.dormitoryId}">宿舍ID号</td>
+                            <td th:text="${record.dormitory_name}">宿舍名</td>
+                            <td th:text="${record.building_name}">楼名</td>
+                            <td th:text="${record.name}">报修人</td>
+                            <td>
+                                <!-- 批准报修表单 -->
+                                <form th:action="@{/dormitoryAdmin/updateRecord}" method="post" style="display: inline-block;">
+                                    <input type="hidden" name="id" th:value="${record.id}" />
+                                    <input type="hidden" name="audit" value="批准" />
+                                    <button type="submit" class="btn btn-success">批准</button>
+                                </form>
+                                <!-- 否决报修表单 -->
+                                <form th:action="@{/dormitoryAdmin/updateRecord}" method="post" style="display: inline-block;">
+                                    <input type="hidden" name="id" th:value="${record.id}" />
+                                    <input type="hidden" name="audit" value="否决" />
+                                    <button type="submit" class="btn btn-danger">否决</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="moveout" role="tabpanel" aria-labelledby="moveout-tab">
+                    <h2>迁移审理</h2>
+                    <p>这里是迁移审理信息管理内容。</p>
+                    <table class="table" id="moveoutTable">
+                        <thead>
+                        <tr>
+                            <th>目标宿舍号</th>
+                            <th>内容</th>
+                            <th>时间</th>
+                            <th>宿舍ID号</th>
+                            <th>宿舍名</th>
+                            <th>楼名</th>
+                            <th>申请人</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="moveout : ${moveoutRecords}">
+                            <td th:text="${moveout.title}">目标宿舍号</td>
+                            <td th:text="${moveout.content}">内容</td>
+                            <td th:text="${moveout.time}">时间</td>
+                            <td th:text="${moveout.dormitoryId}">现宿舍ID号</td>
+                            <td th:text="${moveout.dormitory_name}">现宿舍名</td>
+                            <td th:text="${moveout.building_name}">现楼名</td>
+                            <td th:text="${moveout.name}">申请人</td>
+                            <td>
+                                <!-- 批准迁出表单 -->
+                                <form th:action="@{/dormitoryAdmin/updateMoveoutRecord}" method="post" style="display: inline-block;">
+                                    <input type="hidden" name="id" th:value="${moveout.id}" />
+                                    <input type="hidden" name="audit" value="批准" />
+                                    <input type="hidden" name="targetDormitoryName" th:value="${moveout.title}">
+                                    <button type="submit" class="btn btn-success">批准</button>
+                                </form>
+                                <!-- 否决迁出表单 -->
+                                <form th:action="@{/dormitoryAdmin/updateMoveoutRecord}" method="post" style="display: inline-block;">
+                                    <input type="hidden" name="id" th:value="${moveout.id}" />
+                                    <input type="hidden" name="audit" value="否决" />
+                                    <input type="hidden" name="targetDormitoryName" th:value="${moveout.title}">
+                                    <button type="submit" class="btn btn-danger">否决</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="announcement" role="tabpanel" aria-labelledby="announcement-tab">
+                    <h2>公告</h2>
+                    <p>这里是公告信息管理内容。</p>
+                    <form action="/submit-notice" method="post">
+                        <div class="mb-3">
+                            <label for="noticeTitle" class="form-label">标题:</label>
+                            <input type="text" class="form-control" id="noticeTitle" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="noticeContent" class="form-label">内容:</label>
+                            <textarea class="form-control" id="noticeContent" name="content" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="buildingNames" class="form-label">楼号:</label>
+                            <div id="buildingNames">
+                                <div th:each="buildingName : ${buildingNames}">
+                                    <input type="checkbox" name="buildingName" th:value="${buildingName}" th:text="${buildingName}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">提交公告</button>
+                    </form>
+                    <!-- 报修申请记录标题 -->
+                    <h4 style="margin-top: 80px;">你的通告记录</h4>
+                    <!-- 通告记录表格 -->
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>内容</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="notice : ${noticeRecords}">
+                            <td th:text="${notice.title}"></td>
+                            <td th:text="${notice.content}"></td>
+                            <td>
+                                <!-- 更新操作的表单 -->
+                                <form th:action="@{'/update-notice/' + ${notice.id}}" method="post" style="display: inline-block;">
+                                    <input type="hidden" name="id" th:value="${notice.id}"/>
+                                    <input type="text" name="title" placeholder="Enter new title" required/>
+                                    <input name="content" placeholder="Enter new content" required/>
+                                    <button type="submit" class="btn btn-primary btn-sm">更新</button>
+                                </form>
+                                <!-- 删除操作的表单 -->
+                                <form th:action="@{'/delete-notice/' + ${notice.id}}" method="post" style="display: inline-block;">
+                                    <input type="hidden" name="id" th:value="${notice.id}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定删除吗？');">删除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
