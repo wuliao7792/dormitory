@@ -67,7 +67,7 @@ public class DormitoryAdminServiceimpl implements DormitoryAdminService {
 
 
 
-    // 用于公告记录的保存，报修、迁移记录值能更新
+    // 用于公告记录的保存
     @Override
     public void saveRecord(String title, String content,
                            String mark, Integer dormitoryId, int adminId,
@@ -92,7 +92,7 @@ public class DormitoryAdminServiceimpl implements DormitoryAdminService {
     };
 
 
-    // 根据管理员的ID，获取他管理的楼名
+    // 根据管理员的ID，获取宿管管理的楼名
     @Override
     public List<String> getBuildingNames(int id) {
         // 查询数据库，返回楼名列表
